@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DungeonGenerator
+namespace Dungeon_Generator
 {
     internal class Program
     {
@@ -13,7 +13,9 @@ namespace DungeonGenerator
         private static bool dungeonGenerated = false;
         private static int dungeonWidth = 0;
         private static int dungeonHeight = 0;
-        private static char[,] map = new char[dungeonWidth, dungeonHeight];
+        private static char[,] map;
+
+        private static Random random = new Random();
 
         static void Main(string[] args)
         {
@@ -30,20 +32,62 @@ namespace DungeonGenerator
             Console.Clear();
             sendMainMenu();
 
+            map = new char[dungeonWidth, dungeonHeight];
 
-            for (int height = 1; height <= dungeonHeight; height++)
+            // Startpunkt (S)
+            // Endpunkt (E)
+            // Größere Räume
+            // Schätze (T), Falle (F) 
+            // Weg vom Start bis Ende
+
+            for (int height = 0; height < dungeonHeight; height++)
             {
 
-                for (int width = 1; width <= dungeonWidth; width++)
+                for (int width = 0; width < dungeonWidth; width++)
                 {
-                    if (height == 1 || height == dungeonHeight || width == 1 || width == dungeonWidth)
+                    if (height == 0 || height == dungeonHeight - 1 || width == 0 || width == dungeonWidth - 1)
                     {
                         Console.Write("#");
+                        map[width, height] = '#';
 
                     }
                     else
                     {
-                        Console.Write(".");
+
+                        char upperNeighbor = map[width, height - 1];
+                        char leftNeighbor = map[width - 1, height];
+
+                        if (upperNeighbor == '#' && leftNeighbor == '#')
+                        {
+
+                            Console.Write(".");
+                            map[width, height] = '.';
+
+                        }
+                        else if (upperNeighbor == '.' && leftNeighbor == '.')
+                        {
+
+                            Console.Write("#");
+                            map[width, height] = '#';
+
+                        }
+                        else
+                        {
+
+                            if (random.Next(101) <= 10)
+                            {
+
+                                Console.Write("#");
+                                map[width, height] = '#';
+
+                            }
+                            else
+                            {
+                                Console.Write(".");
+                                map[width, height] = '.';
+                            }
+                        }
+
                     }
                 }
                 Console.WriteLine();
