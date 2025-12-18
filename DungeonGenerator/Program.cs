@@ -19,12 +19,40 @@ namespace DungeonGenerator
         {
 
             sendMainMenu();
+            getMainMenuInput();
 
             Console.ReadKey();
         }
 
         static void generateDungeon()
         {
+
+            Console.Clear();
+            sendMainMenu();
+
+
+            for (int height = 1; height <= dungeonHeight; height++)
+            {
+
+                for (int width = 1; width <= dungeonWidth; width++)
+                {
+                    if (height == 1 || height == dungeonHeight || width == 1 || width == dungeonWidth)
+                    {
+                        Console.Write("#");
+
+                    }
+                    else
+                    {
+                        Console.Write(".");
+                    }
+                }
+                Console.WriteLine();
+
+            }
+
+            Console.WriteLine("");
+
+            getMainMenuInput();
 
         }
 
@@ -37,6 +65,8 @@ namespace DungeonGenerator
 
             bool successfulInput = false;
 
+            Console.WriteLine("Bitte gib einen Befehl ein:");
+
             // Solange wiederholen, bis irgendein Befehl ausgeführt wurde
             while (successfulInput == false)
             {
@@ -47,72 +77,75 @@ namespace DungeonGenerator
                 // Den Input des Benutzers in Einzelteile teilen, sodass man Länge und Höhe lesen kann
                 string[] inputArray = input.ToLower().Split(' ');
 
-                // Wenn der Befehl 'stop' war, Program beenden
-                if (inputArray[0] == "stop")
+                switch (inputArray[0])
                 {
-                    successfulInput = true;
-                    sendSuccessfulMsg("Erfolgreich das Program gestoppt.");
-                    Environment.Exit(0);
+                    case "stop":
 
-                }
-
-                // Wenn der Befehl 'export' war, anfangen, den Dungeon zu exportieren
-                if (inputArray[0] == "export")
-                {
-                    // Abfragen, ob bisher ein Dungeon generiert wurde
-                    if (dungeonGenerated)
-                    {
                         successfulInput = true;
-                    }
-                    else
-                    {
-                        sendErrorMsg("Es wurde bisher kein exportierbarer Dungeon erstellt.");
-                        continue;
-                    }
+                        sendSuccessfulMsg("Erfolgreich das Program gestoppt.");
+                        Environment.Exit(0);
+                        break;
+
+                    case "export":
+
+                        // Abfragen, ob bisher ein Dungeon generiert wurde
+                        if (dungeonGenerated)
+                        {
+                            successfulInput = true;
+                            break;
+                        }
+                        else
+                        {
+                            sendErrorMsg("Es wurde bisher kein exportierbarer Dungeon erstellt.");
+                            break;
+                        }
+
+                    case "generate":
+
+                        int dungeonLänge = 0;
+                        int dungeonHöhe = 0;
+
+                        if (inputArray.Length <= 2)
+                        {
+                            sendErrorMsg("Du musst eine Länge und eine Höhe angeben.");
+                            break;
+                        }
+
+                        try
+                        {
+                            dungeonLänge = int.Parse(inputArray[1]);
+                            dungeonHöhe = int.Parse(inputArray[2]);
+                        }
+                        catch
+                        {
+                            sendErrorMsg("Die Länge/Höhe des Dungeons konnte nicht konvertiert werden, bitte versuche es erneut.");
+                            break;
+                        }
+
+                        if (dungeonLänge < 10 || dungeonLänge > 50)
+                        {
+                            sendErrorMsg("Die Länge muss mindestens 10 und höchstens 50 betragen.");
+                            break;
+                        }
+
+                        if (dungeonHöhe < 10 || dungeonHöhe > 25)
+                        {
+                            sendErrorMsg("Die Höhe muss mindestens 10 und höchstens 25 betragen.");
+                            break;
+                        }
+
+                        dungeonHeight = dungeonHöhe;
+                        dungeonWidth = dungeonLänge;
+
+                        generateDungeon();
+                        successfulInput = true;
+                        break;
+
+                    default:
+                        sendErrorMsg("Einen falschen Befehl eingegeben, bitte versuche es erneut.");
+                        break;
+
                 }
-
-                // Wenn der Befehl 'generate' war, den Dungeon generieren
-                if (inputArray[0] == "generate")
-                {
-                    int dungeonLänge = 0;
-                    int dungeonHöhe = 0;
-
-                    if (inputArray.Length < 3)
-                    {
-                        sendErrorMsg("Du musst eine Länge und eine Höhe angeben.");
-                        continue;
-                    }
-
-                    try
-                    {
-                        dungeonLänge = int.Parse(inputArray[1]);
-                        dungeonHöhe = int.Parse(inputArray[2]);
-                    }
-                    catch
-                    {
-                        sendErrorMsg("Die Länge/Höhe des Dungeons konnte nicht konvertiert werden, bitte versuche es erneut.");
-                        continue;
-                    }
-
-                    if (dungeonLänge < 10 || dungeonLänge > 50)
-                    {
-                        sendErrorMsg("Die Länge muss mindestens 10 und höchstens 50 betragen.");
-                        continue;
-                    }
-
-                    if (dungeonHöhe < 10 || dungeonHöhe > 25)
-                    {
-                        sendErrorMsg("Die Höhe muss mindestens 10 und höchstens 25 betragen.");
-                        continue;
-                    }
-
-                    dungeonWidth = dungeonHöhe;
-                    dungeonWidth = dungeonLänge;
-
-
-                }
-
-                sendErrorMsg("Einen falschen Befehl eingegeben, bitte versuche es erneut.");
 
             }
 
@@ -152,12 +185,9 @@ namespace DungeonGenerator
             Console.WriteLine("Mit diesem Programm kannst du zufällige Dungeon-Karten erstellen.\n");
 
             Console.WriteLine("Verfügbare Befehle:");
-            Console.WriteLine("  generate <länge> <höhe>   -   Erstellt einen neuen Dungeon");
-            Console.WriteLine("  export                    -   Exportet den Dungeon in eine Textdatei");
-            Console.WriteLine("  stop                      -   Beendet das Programm\n");
-
-            Console.WriteLine("Bitte gib einen Befehl ein:");
-            getMainMenuInput();
+            Console.WriteLine("  generate <10-50> <10-25>   -   Erstellt einen neuen Dungeon");
+            Console.WriteLine("  export                     -   Exportet densdf Dungeon in eine Textdatei");
+            Console.WriteLine("  stop                       -   Beendet das Programm\n");
 
         }
     }
