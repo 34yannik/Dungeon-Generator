@@ -34,75 +34,169 @@ namespace Dungeon_Generator
 
             map = new char[dungeonWidth, dungeonHeight];
 
-            // Startpunkt (S)
-            // Endpunkt (E)
-            // Größere Räume
             // Schätze (T), Falle (F) 
             // Weg vom Start bis Ende
 
-            for (int height = 0; height < dungeonHeight; height++)
+            Console.ForegroundColor = ConsoleColor.DarkRed;
+            Console.WriteLine(" --- ZUFALLSDUNGEON ---");
+            Console.ForegroundColor = ConsoleColor.Gray;
+
+            int[] startCoords = generateStart();
+            generateRandomRooms(random.Next(4, 7));
+            generateMaze(startCoords[0], startCoords[1]);
+            generateEnd(startCoords[0], startCoords[1]);
+
+
+            // Restlichen Wände hinzufügen
+            for (int y = 0; y < dungeonHeight; y++)
             {
-
-                for (int width = 0; width < dungeonWidth; width++)
+                for (int x = 0; x < dungeonWidth; x++)
                 {
-                    if (height == 0 || height == dungeonHeight - 1 || width == 0 || width == dungeonWidth - 1)
+
+                    if (y == 0 || y == dungeonHeight - 1 || x == 0 || x == dungeonWidth - 1)
                     {
-                        Console.Write("#");
-                        map[width, height] = '#';
-
+                        map[x, y] = '#';
+                        continue;
                     }
-                    else
+
+                    if (map[x, y] != '\0')
                     {
-
-                        char upperNeighbor = map[width, height - 1];
-                        char leftNeighbor = map[width - 1, height];
-
-                        if (upperNeighbor == '#' && leftNeighbor == '#')
-                        {
-
-                            Console.Write(".");
-                            map[width, height] = '.';
-
-                        }
-                        else if (upperNeighbor == '.' && leftNeighbor == '.')
-                        {
-
-                            Console.Write("#");
-                            map[width, height] = '#';
-
-                        }
-                        else
-                        {
-
-                            if (random.Next(101) <= 10)
-                            {
-
-                                Console.Write("#");
-                                map[width, height] = '#';
-
-                            }
-                            else
-                            {
-                                Console.Write(".");
-                                map[width, height] = '.';
-                            }
-                        }
-
+                        continue;
                     }
+                    map[x, y] = '#';
+
                 }
-                Console.WriteLine();
-
             }
 
-            Console.WriteLine("");
+            sendDungeon();
+
+            dungeonGenerated = true;
 
             getMainMenuInput();
 
         }
 
-        /*
-         *      HILFSMETHODEN
-         */
+        static void sendDungeon()
+        {
+
+            for (int y = 0; y < dungeonHeight; y++)
+            {
+
+                for (int x = 0; x < dungeonWidth; x++)
+                {
+
+                    Console.Write(map[x, y]);
+
+                }
+                Console.WriteLine();
+
+            }
+
+        }
+
+        static void generateMaze(int startX, int startY)
+        {
+            // 4 mögliche Richtungen
+            int[,] directions = new int[,]
+            {   // x, y
+        { 0, -2 }, // nach oben
+        { 2, 0 },  // nach rechts
+        { 0, 2 },  // nach unten
+        { -2, 0 }  // nach links
+            };
+
+            // Shuffle-directions in-place
+            for (int i = 3; i > 0; i--)
+            {
+                int j = random.Next(i + 1); // 0 bis i
+                                            // Tausche i und j
+                int tempX = directions[i, 0];
+                int tempY = directions[i, 1];
+                directions[i, 0] = directions[j, 0];
+                directions[i, 1] = directions[j, 1];
+                directions[j, 0] = tempX;
+                directions[j, 1] = tempY;
+            }
+
+            for (int i = 0; i < 4; i++)
+            {
+                int targetX = startX + directions[i, 0];
+                int targetY = startY + directions[i, 1];
+
+                if (targetX < 1 || targetX > dungeonWidth - 2 || targetY < 1 || targetY > dungeonHeight - 2)
+                    continue;
+
+                if (map[targetX, targetY] == '\0')
+                {
+                    int zwischenX = startX + directions[i, 0] / 2;
+                    int zwischenY = startY + directions[i, 1] / 2;
+                    map[zwischenX, zwischenY] = '.';
+                    map[targetX, targetY] = '.';
+
+                    generateMaze(targetX, targetY);
+                }
+            }
+        }
+
+        static int[] generateStart()
+        {
+
+            int startWidth = random.Next(1, dungeonWidth - 1);
+            int startHeight = random.Next(1, dungeonHeight - 1);
+            map[startWidth, startHeight] = 'S';
+
+            return new int[] { startWidth, startHeight };
+
+        }
+
+        static int[] generateEnd(int startX, int startY)
+        {
+
+            int endX;
+            int endY;
+            int distance;
+            int minDistance = 5; // Mindestabstand zwischen Start und Ende
+
+            do
+            {
+                endX = random.Next(1, dungeonWidth - 1);
+                endY = random.Next(1, dungeonHeight - 1);
+
+                distance = Math.Abs(endX - startX) + Math.Abs(endY - startY);
+
+            } while (map[endX, endY] != '.' || distance < minDistance);
+
+            map[endX, endY] = 'E';
+
+            return new int[] { endX, endY };
+
+        }
+
+        static void generateRandomRooms(int roomCount)
+        {
+
+            for (int i = 0; i < roomCount; i++)
+            {
+                int roomWidth = random.Next(3, 6);
+                int roomHeight = random.Next(3, 6);
+
+                int roomX = random.Next(1, dungeonWidth - roomWidth - 1);
+                int roomY = random.Next(1, dungeonHeight - roomHeight - 1);
+
+                for (int y = roomY; y < roomY + roomHeight; y++)
+                {
+                    for (int x = roomX; x < roomX + roomWidth; x++)
+                    {
+                        if (map[x, y] != '\0')
+                        {
+                            continue;
+                        }
+                        map[x, y] = '.';
+                    }
+                }
+            }
+
+        }
 
         static void getMainMenuInput()
         {
@@ -185,6 +279,10 @@ namespace Dungeon_Generator
                         successfulInput = true;
                         break;
 
+                    case "solution":
+
+
+
                     default:
                         sendErrorMsg("Einen falschen Befehl eingegeben, bitte versuche es erneut.");
                         break;
@@ -232,6 +330,7 @@ namespace Dungeon_Generator
             Console.WriteLine("  generate <10-50> <10-25>   -   Erstellt einen neuen Dungeon");
             Console.WriteLine("  export                     -   Exportet densdf Dungeon in eine Textdatei");
             Console.WriteLine("  stop                       -   Beendet das Programm\n");
+            Console.WriteLine("  solution                   -   Zeigt dir den Weg vom Start zum Ende");
 
         }
     }
