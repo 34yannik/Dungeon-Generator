@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Security.Cryptography;
 
 namespace Dungeon_Generator
 {
@@ -17,6 +16,10 @@ namespace Dungeon_Generator
 
         private static Random random = new Random();
 
+        /*
+         * Main()
+         * Hauptmethode des Programs
+         */
         static void Main(string[] args)
         {
 
@@ -26,74 +29,293 @@ namespace Dungeon_Generator
             Console.ReadKey();
         }
 
-        static void generateDungeon()
+
+        /* 
+         * sendMainMenu()
+         * Gibt das Hauptmenü mit allen verfügbaren Befehlen auf der Konsole aus.
+         */
+        static void sendMainMenu()
         {
 
+            // Console.WriteLines für das Main Menu
+            Console.WriteLine("===========================================");
+            Console.WriteLine("        RANDOM DUNGEON MAP GENERATOR       ");
+            Console.WriteLine("===========================================\n");
+
+            Console.WriteLine("Willkommen zum RDM-Generator!");
+            Console.WriteLine("Mit diesem Programm kannst du zufällige Dungeon-Karten erstellen.\n");
+
+            Console.WriteLine("Verfügbare Befehle:");
+            Console.WriteLine("  generate <10-50> <10-25>   -   Erstellt einen neuen Dungeon");
+            Console.WriteLine("  export                     -   Exportet den Dungeon in eine Textdatei");
+            Console.WriteLine("  stop                       -   Beendet das Programm\n");
+
+        }
+
+
+        /* 
+        * getMainMenuInput()
+        * Liest die Benutzereingaben vom Hauptmenü ein.
+        * Unterstützt die Befehle:
+        *  - stop: Programm beenden
+        *  - export: Dungeon exportieren
+        *  - generate <width> <height>: neuen Dungeon erstellen
+        * Prüft Eingaben auf Gültigkeit und zeigt Fehlermeldungen bei falschen Eingaben.
+        */
+        static void getMainMenuInput()
+        {
+
+            bool successfulInput = false;
+
+            Console.WriteLine("Bitte gib einen Befehl ein:");
+
+            // Solange wiederholen, bis irgendein Befehl ausgeführt wurde
+            while (successfulInput == false)
+            {
+
+                // Eingabe des Benutzers
+                Console.Write(" > ");
+                string input = Console.ReadLine();
+
+                // Den Input des Benutzers in Einzelteile teilen, sodass man Breite und Höhe lesen kann
+                string[] inputArray = input.ToLower().Split(' ');
+
+                // Abfrage was eingegeben wurde
+                switch (inputArray[0])
+                {
+                    // Stoppt den Generator
+                    case "stop":
+
+                        successfulInput = true;
+                        sendSuccessfulMsg("Erfolgreich das Program gestoppt.");
+                        Environment.Exit(0);
+                        break;
+
+                    // Exportiert den Dungeon in ein Textdokument auf den Desktop
+                    case "export":
+
+                        // Abfragen, ob bisher ein Dungeon generiert wurde
+                        if (dungeonGenerated)
+                        {
+                            successfulInput = true;
+                            break;
+                        }
+                        else
+                        {
+                            sendErrorMsg("Es wurde bisher kein exportierbarer Dungeon erstellt.");
+                            break;
+                        }
+
+                    // Generiert einen Dungeon
+                    case "generate":
+
+                        int dungeonBreite = 0;
+                        int dungeonHöhe = 0;
+
+                        // Fehlernachricht für eine unvollständige Eingabe
+                        if (inputArray.Length <= 2)
+                        {
+                            sendErrorMsg("Du musst eine Breite und eine Höhe angeben.");
+                            break;
+                        }
+
+                        // Abfrage ob die Eingabe ganze Zahlen sind
+                        try
+                        {
+                            dungeonBreite = int.Parse(inputArray[1]);
+                            dungeonHöhe = int.Parse(inputArray[2]);
+                        }
+                        catch
+                        {
+                            sendErrorMsg("Die Breite/Höhe des Dungeons konnte nicht konvertiert werden, bitte versuche es erneut.");
+                            break;
+                        }
+
+                        // Abfrage ob die Breite nicht zu Hoch oder zu niedrig ist
+                        if (dungeonBreite < 10 || dungeonBreite > 50)
+                        {
+                            sendErrorMsg("Die Breite muss mindestens 10 und höchstens 50 betragen.");
+                            break;
+                        }
+
+                        // Abfrage ob die Höhe nicht zu Hoch oder zu niedrig ist
+                        if (dungeonHöhe < 10 || dungeonHöhe > 25)
+                        {
+                            sendErrorMsg("Die Höhe muss mindestens 10 und höchstens 25 betragen.");
+                            break;
+                        }
+
+                        // Speichert die Lokalen Variablen in die Globalen Variablen
+                        dungeonHeight = dungeonHöhe;
+                        dungeonWidth = dungeonBreite;
+
+                        generateDungeon();
+                        successfulInput = true;
+                        break;
+
+                    // Wenn irgendwas anderes eingegeben wird
+                    default:
+                        sendErrorMsg("Einen falschen Befehl eingegeben, bitte versuche es erneut.");
+                        break;
+
+                }
+
+            }
+
+        }
+
+
+        /* 
+         * sendErrorMsg(string msg)
+         * Gibt eine rote Fehlermeldung auf der Konsole aus.
+         */
+        static void sendErrorMsg(string msg)
+        {
+            // Zeichenfarbe zu Rot ändern
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(msg + "\n");
+            // Nach der Nachricht zurück ändern
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
+
+        /* 
+         * sendSuccessfulMsg(string msg)
+         * Gibt eine grüne Erfolgsmeldung auf der Konsole aus.
+         */
+        static void sendSuccessfulMsg(string msg)
+        {
+            // Zeichenfarbe zu Grüner ändern
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine(msg + "\n");
+            // Nach der Nachricht zurück ändern
+            Console.ForegroundColor = ConsoleColor.Gray;
+        }
+
+
+        /* 
+        * generateDungeon()
+        * Generiert einen neuen Dungeon:
+        *  - Initialisiert die Map
+        *  - Erstellt Startpunkt, Räume, Maze, Endpunkt und Objekte (Schätze/Fallen)
+        *  - Füllt verbleibende leere Felder mit Wänden
+        *  - Gibt den Dungeon auf der Konsole aus
+        */
+        static void generateDungeon()
+        {
+            // Setzt die Konsole so zurück sodass die Eingabe nicht mehr angezeigt wird
             Console.Clear();
             sendMainMenu();
 
+            // Array Initialiesieren
             map = new char[dungeonWidth, dungeonHeight];
 
-            // Schätze (T), Falle (F) 
-            // Weg vom Start bis Ende
-
+            // Ändert die Schriftfarbe auf dunkelrot, schreibt die Überschrift und ändert die Farbe wieder auf grau
             Console.ForegroundColor = ConsoleColor.DarkRed;
             Console.WriteLine(" --- ZUFALLSDUNGEON ---");
             Console.ForegroundColor = ConsoleColor.Gray;
 
+            // Methoden aufrufen zum generieren des Dungeons
             int[] startCoords = generateStart();
             generateRandomRooms(random.Next(4, 7));
             generateMaze(startCoords[0], startCoords[1]);
             generateEnd(startCoords[0], startCoords[1]);
+            generateObjects();
 
 
             // Restlichen Wände hinzufügen
+            // Zwei for-Schleifen um ein Koordinatensystem zu simulieren
             for (int y = 0; y < dungeonHeight; y++)
             {
                 for (int x = 0; x < dungeonWidth; x++)
                 {
 
+                    // Setzt den Rand
                     if (y == 0 || y == dungeonHeight - 1 || x == 0 || x == dungeonWidth - 1)
                     {
                         map[x, y] = '#';
                         continue;
                     }
-
+                    // Überspringt die Koordinate wenn sie schon besetzt ist
                     if (map[x, y] != '\0')
                     {
                         continue;
                     }
+                    // Füllt jede freie Koordinate mit einer Wand
                     map[x, y] = '#';
 
                 }
             }
 
+            // Methoden werden aufgerufen
             sendDungeon();
-
-            dungeonGenerated = true;
-
+            sendSuccessfulMsg("Der Dungeon wurde erfolgreich erstellt");
             getMainMenuInput();
 
         }
 
-        static void sendDungeon()
+
+        /* 
+        * generateStart()
+        * Wählt eine zufällige Startposition für den Dungeon und markiert sie mit 'S'.
+        * Gibt die Koordinaten [x, y] zurück.
+        */
+        static int[] generateStart()
         {
 
-            for (int y = 0; y < dungeonHeight; y++)
+            int startWidth = random.Next(1, dungeonWidth - 1);      // Erstellt eine Random Zahl zwischen 1 und der Dungeon Breite -1
+            int startHeight = random.Next(1, dungeonHeight - 1);    // Erstellt eine Random Zahl zwischen 1 und der Dungeon Höhe -1
+            map[startWidth, startHeight] = 'S';                     // Speichert diese Zahlen dann im Koordinatensystem und speichert S bei diesen Koordinaten 
+
+            return new int[] { startWidth, startHeight };
+
+        }
+
+
+        /* 
+        * generateRandomRooms(int roomCount)
+        * Erstellt eine bestimmte Anzahl rechteckiger Räume im Dungeon.
+        *  - Räume werden zufällig positioniert
+        *  - Größe zwischen 3x3 und 6x6
+        *  - Räume überschreiben nur leere Felder
+        *  - Räume werden mit '.' markiert
+        */
+        static void generateRandomRooms(int roomCount)
+        {
+
+            for (int i = 0; i < roomCount; i++)
             {
+                // Erstellt Random Zahlen zwischen 3 und 6 für die obere und Linke Wand des Raums
+                int roomWidth = random.Next(3, 6);
+                int roomHeight = random.Next(3, 6);
 
-                for (int x = 0; x < dungeonWidth; x++)
+                // Erstellt Random Zahlen für die Breite und Höhe des Raums
+                int roomX = random.Next(1, dungeonWidth - roomWidth - 1);
+                int roomY = random.Next(1, dungeonHeight - roomHeight - 1);
+
+                for (int y = roomY; y < roomY + roomHeight; y++)
                 {
-
-                    Console.Write(map[x, y]);
-
+                    for (int x = roomX; x < roomX + roomWidth; x++)
+                    {
+                        // Überprüft ob die Koordinate schon besetzt ist
+                        if (map[x, y] != '\0')
+                        {
+                            continue;
+                        }
+                        map[x, y] = '.';
+                    }
                 }
-                Console.WriteLine();
-
             }
 
         }
 
+
+        /* 
+        * generateMaze(int startX, int startY)
+        * Erstellt ein Labyrinth ab einer Startposition.
+        *  - Bewegt sich nur in vertikal/horizontal (keine Diagonalen)
+        *  - Markiert den Pfad mit '.'
+        */
         static void generateMaze(int startX, int startY)
         {
             // 4 mögliche Richtungen
@@ -138,199 +360,142 @@ namespace Dungeon_Generator
             }
         }
 
-        static int[] generateStart()
-        {
 
-            int startWidth = random.Next(1, dungeonWidth - 1);
-            int startHeight = random.Next(1, dungeonHeight - 1);
-            map[startWidth, startHeight] = 'S';
-
-            return new int[] { startWidth, startHeight };
-
-        }
-
+        /* 
+        * generateEnd(int startX, int startY)
+        * Wählt eine zufällige Endposition für den Dungeon und markiert sie mit 'E'.
+        * - Endpunkt wird nur gewählt, wenn er mindestens minDistance Felder vom Start entfernt ist
+        * - Gibt die Koordinaten [x, y] zurück
+        */
         static int[] generateEnd(int startX, int startY)
         {
 
+            // Variablen Deklarieren
             int endX;
             int endY;
             int distance;
-            int minDistance = 5; // Mindestabstand zwischen Start und Ende
+            int minDistance = 7; // Mindestabstand zwischen Start und Ende
 
+            // Überprüft ob der Abstand zwischen Start und Ende minDistance beträgt
             do
             {
+                // Erstellt Random Koordinaten für das Ende
                 endX = random.Next(1, dungeonWidth - 1);
                 endY = random.Next(1, dungeonHeight - 1);
 
+                // Rechnet den Abstand zwischen Start und Ende aus
                 distance = Math.Abs(endX - startX) + Math.Abs(endY - startY);
 
             } while (map[endX, endY] != '.' || distance < minDistance);
 
-            map[endX, endY] = 'E';
+            map[endX, endY] = 'E';      // Speichert diese Zahlen dann im Koordinatensystem und speichert S bei diesen Koordinaten
 
             return new int[] { endX, endY };
 
         }
 
-        static void generateRandomRooms(int roomCount)
+
+        /* 
+        * generateObjects()
+        * Verteilt zufällig Schatzkisten (T) und Fallen (F) im Dungeon.
+        *  - Nur auf freien Feldern '.'
+        *  - Wahrscheinlichkeit für Objekte liegt bei 5%
+        *  - Für jedes gewählte Feld 50/50 Chance: T oder F
+        */
+        static void generateObjects()
         {
-
-            for (int i = 0; i < roomCount; i++)
+            for (int y = 0; y < dungeonHeight; y++)
             {
-                int roomWidth = random.Next(3, 6);
-                int roomHeight = random.Next(3, 6);
-
-                int roomX = random.Next(1, dungeonWidth - roomWidth - 1);
-                int roomY = random.Next(1, dungeonHeight - roomHeight - 1);
-
-                for (int y = roomY; y < roomY + roomHeight; y++)
+                for (int x = 0; x < dungeonWidth; x++)
                 {
-                    for (int x = roomX; x < roomX + roomWidth; x++)
+                    // Überspringt die Koordinate wenn sie schon belegt ist
+                    if (map[x, y] != '.')
+                        continue;
+
+                    // Setzt die Chance der Objekte auf 5%
+                    if (random.NextDouble() > 0.05)
+                        continue;
+
+                    // Entscheidet mit einer 50/50 Chance ob es eine Truhe oder eine Falle sein soll
+                    if (random.NextDouble() > 0.5)
                     {
-                        if (map[x, y] != '\0')
-                        {
-                            continue;
-                        }
-                        map[x, y] = '.';
+                        map[x, y] = 'T';
+                    }
+                    else
+                    {
+                        map[x, y] = 'F';
                     }
                 }
             }
-
         }
 
-        static void getMainMenuInput()
+
+        /* 
+        * sendDungeon()
+        * Gibt den aktuellen Dungeon auf der Konsole aus.
+        * Farben werden verwendet:
+        *  - Start/Ende = lila
+        *  - Schatz = grün
+        *  - Falle = rot
+        *  - Alles andere = grau
+        *  - Eine Legende der Karte
+        */
+        static void sendDungeon()
         {
-
-            bool successfulInput = false;
-
-            Console.WriteLine("Bitte gib einen Befehl ein:");
-
-            // Solange wiederholen, bis irgendein Befehl ausgeführt wurde
-            while (successfulInput == false)
+            for (int y = 0; y < dungeonHeight; y++)
             {
-
-                Console.Write(" > ");
-                string input = Console.ReadLine();
-
-                // Den Input des Benutzers in Einzelteile teilen, sodass man Länge und Höhe lesen kann
-                string[] inputArray = input.ToLower().Split(' ');
-
-                switch (inputArray[0])
+                for (int x = 0; x < dungeonWidth; x++)
                 {
-                    case "stop":
+                    // Ändert die Farbe für Start und Ziel auf Dunkel Magenta
+                    if (map[x, y] == 'S' || map[x, y] == 'E')
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkMagenta;
+                        Console.Write(map[x, y]);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        continue;
+                    }
 
-                        successfulInput = true;
-                        sendSuccessfulMsg("Erfolgreich das Program gestoppt.");
-                        Environment.Exit(0);
-                        break;
+                    // Ändert die Farbe für Truhen auf Grün
+                    if (map[x, y] == 'T')
+                    {
+                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.Write(map[x, y]);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        continue;
+                    }
 
-                    case "export":
+                    // Ändert die Farbe für Fallen auf Rot
+                    if (map[x, y] == 'F')
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.Write(map[x, y]);
+                        Console.ForegroundColor = ConsoleColor.Gray;
+                        continue;
+                    }
 
-                        // Abfragen, ob bisher ein Dungeon generiert wurde
-                        if (dungeonGenerated)
-                        {
-                            successfulInput = true;
-                            break;
-                        }
-                        else
-                        {
-                            sendErrorMsg("Es wurde bisher kein exportierbarer Dungeon erstellt.");
-                            break;
-                        }
-
-                    case "generate":
-
-                        int dungeonLänge = 0;
-                        int dungeonHöhe = 0;
-
-                        if (inputArray.Length <= 2)
-                        {
-                            sendErrorMsg("Du musst eine Länge und eine Höhe angeben.");
-                            break;
-                        }
-
-                        try
-                        {
-                            dungeonLänge = int.Parse(inputArray[1]);
-                            dungeonHöhe = int.Parse(inputArray[2]);
-                        }
-                        catch
-                        {
-                            sendErrorMsg("Die Länge/Höhe des Dungeons konnte nicht konvertiert werden, bitte versuche es erneut.");
-                            break;
-                        }
-
-                        if (dungeonLänge < 10 || dungeonLänge > 50)
-                        {
-                            sendErrorMsg("Die Länge muss mindestens 10 und höchstens 50 betragen.");
-                            break;
-                        }
-
-                        if (dungeonHöhe < 10 || dungeonHöhe > 25)
-                        {
-                            sendErrorMsg("Die Höhe muss mindestens 10 und höchstens 25 betragen.");
-                            break;
-                        }
-
-                        dungeonHeight = dungeonHöhe;
-                        dungeonWidth = dungeonLänge;
-
-                        generateDungeon();
-                        successfulInput = true;
-                        break;
-
-                    case "solution":
-
-
-
-                    default:
-                        sendErrorMsg("Einen falschen Befehl eingegeben, bitte versuche es erneut.");
-                        break;
+                    // Gibt die Wände und Gänge aus
+                    Console.Write(map[x, y]);
 
                 }
+                Console.WriteLine();
 
             }
 
-        }
-
-        // Roter Error Message ausgeben lassen
-        static void sendErrorMsg(string msg)
-        {
-            // Zeichenfarbe zu Rot ändern
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine(msg + "\n");
-            // Nach der Nachricht zurück ändern
+            // Legende unter dem Dungeon
+            Console.WriteLine("");
+            Console.ForegroundColor = ConsoleColor.DarkMagenta;
+            Console.Write("   S E ");
             Console.ForegroundColor = ConsoleColor.Gray;
-        }
-
-        // Roter Error Message ausgeben lassen
-        static void sendSuccessfulMsg(string msg)
-        {
-            // Zeichenfarbe zu Grüner ändern
+            Console.Write("= Start/Endpunkt   ");
             Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine(msg + "\n");
-            // Nach der Nachricht zurück ändern
+            Console.Write("   T ");
             Console.ForegroundColor = ConsoleColor.Gray;
-        }
-
-
-        // Main Menu in der Konsole ausgeben
-        static void sendMainMenu()
-        {
-
-            // Console.WriteLines für das Main Menu
-            Console.WriteLine("===========================================");
-            Console.WriteLine("        RANDOM DUNGEON MAP GENERATOR       ");
-            Console.WriteLine("===========================================\n");
-
-            Console.WriteLine("Willkommen zum RDM-Generator!");
-            Console.WriteLine("Mit diesem Programm kannst du zufällige Dungeon-Karten erstellen.\n");
-
-            Console.WriteLine("Verfügbare Befehle:");
-            Console.WriteLine("  generate <10-50> <10-25>   -   Erstellt einen neuen Dungeon");
-            Console.WriteLine("  export                     -   Exportet densdf Dungeon in eine Textdatei");
-            Console.WriteLine("  stop                       -   Beendet das Programm\n");
-            Console.WriteLine("  solution                   -   Zeigt dir den Weg vom Start zum Ende");
+            Console.Write("= Schatzkiste   ");
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write("   F ");
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("= Falle   ");
+            Console.WriteLine("\n");
 
         }
     }
