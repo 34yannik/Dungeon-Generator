@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 
@@ -47,7 +48,7 @@ namespace Dungeon_Generator
 
             Console.WriteLine("Verfügbare Befehle:");
             Console.WriteLine("  generate <10-50> <10-25>   -   Erstellt einen neuen Dungeon");
-            Console.WriteLine("  export                     -   Exportet den Dungeon in eine Textdatei");
+            Console.WriteLine("  export   <Dateiname>       -   Exportet den Dungeon in eine Textdatei (max. 15 Zeichen)");
             Console.WriteLine("  stop                       -   Beendet das Programm\n");
 
         }
@@ -98,6 +99,42 @@ namespace Dungeon_Generator
                         if (dungeonGenerated)
                         {
                             successfulInput = true;
+
+                            string dateiName;
+                            if (inputArray[1] == null)
+                            {
+                                dateiName = "Dungeon";
+                            }
+                            else
+                            {
+                                if (inputArray[1].Length > 15) 
+                                {
+                                    sendErrorMsg("Datei wurde in Dungeon umbenannt, weil der Dateiname zu lang war. (max. 15 Zeichen)");
+                                    dateiName = "Dungeon";
+                                }
+                                else
+                                {
+                                    dateiName = inputArray[1];
+                                }
+                            }
+
+                            string speicherText = "";
+
+                            for (int y = 0; y < dungeonHeight; y++)
+                            {
+                                for (int x = 0; x < dungeonWidth; x++)
+                                {
+                                    speicherText = speicherText + map[x, y];
+                                }
+                                speicherText = speicherText + "\n";
+
+                            }
+
+                            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                            File.WriteAllText(Path.Combine(desktopPath, dateiName + ".txt"), speicherText);
+
+                            sendSuccessfulMsg("Dungeon wurde erfolgreich auf dem Desktop mit dem Namen " + dateiName + " gespeichert.");
+
                             break;
                         }
                         else
@@ -153,7 +190,7 @@ namespace Dungeon_Generator
                         successfulInput = true;
                         break;
 
-                    // Wenn irgendwas anderes eingegeben wird
+                    // Wenn irgendwas anderes eingegeben wird 
                     default:
                         sendErrorMsg("Einen falschen Befehl eingegeben, bitte versuche es erneut.");
                         break;
@@ -478,6 +515,8 @@ namespace Dungeon_Generator
 
                 }
                 Console.WriteLine();
+
+                dungeonGenerated = true;
 
             }
 
