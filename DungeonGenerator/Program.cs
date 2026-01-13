@@ -60,7 +60,7 @@ namespace Dungeon_Generator
         * Unterstützt die Befehle:
         *  - stop: Programm beenden
         *  - export: Dungeon exportieren
-        *  - generate <width> <height>: neuen Dungeon erstellen
+        *  - generate <breite> <höhe>: neuen Dungeon erstellen
         * Prüft Eingaben auf Gültigkeit und zeigt Fehlermeldungen bei falschen Eingaben.
         */
         static void getMainMenuInput()
@@ -70,7 +70,7 @@ namespace Dungeon_Generator
 
             Console.WriteLine("Bitte gib einen Befehl ein:");
 
-            // Solange wiederholen, bis irgendein Befehl ausgeführt wurde
+            // Solange wiederholen bis irgendein Befehl ausgeführt wurde
             while (successfulInput == false)
             {
 
@@ -78,7 +78,7 @@ namespace Dungeon_Generator
                 Console.Write(" > ");
                 string input = Console.ReadLine();
 
-                // Den Input des Benutzers in Einzelteile teilen, sodass man Breite und Höhe lesen kann
+                // Den Input des Benutzers in Einzelteile teilen sodass man Breite und Höhe lesen kann
                 string[] inputArray = input.ToLower().Split(' ');
 
                 // Abfrage was eingegeben wurde
@@ -95,42 +95,54 @@ namespace Dungeon_Generator
                     // Exportiert den Dungeon in ein Textdokument auf den Desktop
                     case "export":
 
-                        // Abfragen, ob bisher ein Dungeon generiert wurde
+                        // Abfragen ob bisher ein Dungeon generiert wurde
                         if (dungeonGenerated)
                         {
                             successfulInput = true;
 
                             string dateiName;
+
+                            string speicherText = "";
+
+                            // Fragt ab ob ein Name eingegeben wurde
                             if (inputArray[1] == null)
                             {
                                 dateiName = "Dungeon";
                             }
                             else
                             {
+
+                                // Fragt ab ob der Name kurz genug ist
                                 if (inputArray[1].Length > 15) 
                                 {
                                     sendErrorMsg("Datei wurde in Dungeon umbenannt, weil der Dateiname zu lang war. (max. 15 Zeichen)");
                                     dateiName = "Dungeon";
                                 }
+
+                                // Wenn korz genug ist Name setzen
                                 else
                                 {
                                     dateiName = inputArray[1];
                                 }
                             }
 
-                            string speicherText = "";
 
+                            // Simuliert zweidimensionale for Schleife
                             for (int y = 0; y < dungeonHeight; y++)
                             {
                                 for (int x = 0; x < dungeonWidth; x++)
                                 {
+                                    // Fügt derzeitige Koordinate zum Speichertext hinzu
                                     speicherText = speicherText + map[x, y];
                                 }
                                 speicherText = speicherText + "\n";
 
                             }
 
-                            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+                            // Benutzt eine Methode von der Klasse Environment um den Desktoppath zu bekommen
+                            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);    
+                            
+                            // Speichert den Speichertext in eine Textdatei auf dem Desktop
                             File.WriteAllText(Path.Combine(desktopPath, dateiName + ".txt"), speicherText);
 
                             sendSuccessfulMsg("Dungeon wurde erfolgreich auf dem Desktop mit dem Namen " + dateiName + " gespeichert.");
@@ -208,7 +220,7 @@ namespace Dungeon_Generator
          */
         static void sendErrorMsg(string msg)
         {
-            // Zeichenfarbe zu Rot ändern
+            // Zeichenfarbe zu rot ändern
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine(msg + "\n");
             // Nach der Nachricht zurück ändern
@@ -222,7 +234,7 @@ namespace Dungeon_Generator
          */
         static void sendSuccessfulMsg(string msg)
         {
-            // Zeichenfarbe zu Grüner ändern
+            // Zeichenfarbe zu grün ändern
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine(msg + "\n");
             // Nach der Nachricht zurück ändern
@@ -247,7 +259,7 @@ namespace Dungeon_Generator
             // Array Initialiesieren
             map = new char[dungeonWidth, dungeonHeight];
 
-            // Ändert die Schriftfarbe auf dunkelrot, schreibt die Überschrift und ändert die Farbe wieder auf grau
+            // Ändert die Schriftfarbe auf dunkelrot schreibt die Überschrift und ändert die Farbe wieder auf grau
             Console.ForegroundColor = ConsoleColor.DarkRed;
             Console.WriteLine(" --- ZUFALLSDUNGEON ---");
             Console.ForegroundColor = ConsoleColor.Gray;
@@ -261,7 +273,7 @@ namespace Dungeon_Generator
 
 
             // Restlichen Wände hinzufügen
-            // Zwei for-Schleifen um ein Koordinatensystem zu simulieren
+            // Zwei for Schleifen um ein Koordinatensystem zu simulieren
             for (int y = 0; y < dungeonHeight; y++)
             {
                 for (int x = 0; x < dungeonWidth; x++)
@@ -294,8 +306,8 @@ namespace Dungeon_Generator
 
         /* 
         * generateStart()
-        * Wählt eine zufällige Startposition für den Dungeon und markiert sie mit 'S'.
-        * Gibt die Koordinaten [x, y] zurück.
+        * Wählt eine zufällige Startposition für den Dungeon und markiert sie mit S.
+        * Gibt die Koordinaten x y zurück.
         */
         static int[] generateStart()
         {
@@ -315,7 +327,7 @@ namespace Dungeon_Generator
         *  - Räume werden zufällig positioniert
         *  - Größe zwischen 3x3 und 6x6
         *  - Räume überschreiben nur leere Felder
-        *  - Räume werden mit '.' markiert
+        *  - Räume werden mit . markiert
         */
         static void generateRandomRooms(int roomCount)
         {
@@ -351,20 +363,20 @@ namespace Dungeon_Generator
         * generateMaze(int startX, int startY)
         * Erstellt ein Labyrinth ab einer Startposition.
         *  - Bewegt sich nur in vertikal/horizontal (keine Diagonalen)
-        *  - Markiert den Pfad mit '.'
+        *  - Markiert den Pfad mit .
         */
         static void generateMaze(int startX, int startY)
         {
             // 4 mögliche Richtungen
             int[,] directions = new int[,]
-            {   // x, y
-        { 0, -2 }, // nach oben
-        { 2, 0 },  // nach rechts
-        { 0, 2 },  // nach unten
-        { -2, 0 }  // nach links
+            {          // x, y
+                { 0, -2 }, // nach oben
+                { 2, 0 },  // nach rechts
+                { 0, 2 },  // nach unten
+                { -2, 0 }  // nach links
             };
 
-            // Shuffle-directions in-place
+            // Direction Array zufällig anordnen
             for (int i = 3; i > 0; i--)
             {
                 int j = random.Next(i + 1); // 0 bis i
@@ -376,22 +388,28 @@ namespace Dungeon_Generator
                 directions[j, 0] = tempX;
                 directions[j, 1] = tempY;
             }
-
+            
+            // Führt den Code vier mal pro Methodenaufruf auf
             for (int i = 0; i < 4; i++)
             {
+                // Berechnet wo der nächste Weg hingeht
                 int targetX = startX + directions[i, 0];
                 int targetY = startY + directions[i, 1];
 
+                // Die nächste Koordinate darf nicht außerhalb des Dungeons sein
                 if (targetX < 1 || targetX > dungeonWidth - 2 || targetY < 1 || targetY > dungeonHeight - 2)
                     continue;
 
+                // Wenn die berechnete Koordinate nicht besetzt ist
                 if (map[targetX, targetY] == '\0')
                 {
+                    // Berechnet die Zwischenkoordinate und setzt beide Koordinaten als Weg
                     int zwischenX = startX + directions[i, 0] / 2;
                     int zwischenY = startY + directions[i, 1] / 2;
                     map[zwischenX, zwischenY] = '.';
                     map[targetX, targetY] = '.';
 
+                    // Führt solange aus bis der Weg nicht mehr weitergeführt werden kann
                     generateMaze(targetX, targetY);
                 }
             }
@@ -400,9 +418,9 @@ namespace Dungeon_Generator
 
         /* 
         * generateEnd(int startX, int startY)
-        * Wählt eine zufällige Endposition für den Dungeon und markiert sie mit 'E'.
-        * - Endpunkt wird nur gewählt, wenn er mindestens minDistance Felder vom Start entfernt ist
-        * - Gibt die Koordinaten [x, y] zurück
+        * Wählt eine zufällige Endposition für den Dungeon und markiert sie mit E.
+        * - Endpunkt wird nur gewählt wenn er mindestens minDistance Felder vom Start entfernt ist
+        * - Gibt die Koordinaten x y zurück
         */
         static int[] generateEnd(int startX, int startY)
         {
@@ -434,8 +452,8 @@ namespace Dungeon_Generator
 
         /* 
         * generateObjects()
-        * Verteilt zufällig Schatzkisten (T) und Fallen (F) im Dungeon.
-        *  - Nur auf freien Feldern '.'
+        * Verteilt zufällig Schatzkisten T und Fallen F im Dungeon.
+        *  - Nur auf freien Feldern .
         *  - Wahrscheinlichkeit für Objekte liegt bei 5%
         *  - Für jedes gewählte Feld 50/50 Chance: T oder F
         */
