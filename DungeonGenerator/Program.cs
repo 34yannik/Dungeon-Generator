@@ -266,7 +266,11 @@ namespace Dungeon_Generator
 
             // Methoden aufrufen zum generieren des Dungeons
             int[] startCoords = generateStart();
-            generateRandomRooms(random.Next(4, 7));
+
+            int roomCount = (dungeonWidth * dungeonHeight) / 150; // 1 Raum pro 150 Felder
+            roomCount = Math.Max(0, Math.Min(roomCount, 6)); // mindestens 0  maximal 6
+            generateRandomRooms(roomCount);
+
             generateMaze(startCoords[0], startCoords[1]);
             generateEnd(startCoords[0], startCoords[1]);
             generateObjects();
@@ -534,9 +538,9 @@ namespace Dungeon_Generator
                 }
                 Console.WriteLine();
 
-                dungeonGenerated = true;
-
             }
+
+            dungeonGenerated = true;
 
             // Legende unter dem Dungeon
             Console.WriteLine("");
