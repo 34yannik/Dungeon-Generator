@@ -126,7 +126,6 @@ namespace Dungeon_Generator
                                 }
                             }
 
-
                             // Simuliert zweidimensionale for Schleife
                             for (int y = 0; y < dungeonHeight; y++)
                             {
@@ -139,14 +138,23 @@ namespace Dungeon_Generator
 
                             }
 
+                            foreach (char c in Path.GetInvalidFileNameChars())
+                            {
+                                dateiName = dateiName.Replace(c.ToString(), "");
+                            }
+
                             // Benutzt eine Methode von der Klasse Environment um den Desktoppath zu bekommen
                             string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);    
-                            
+                             
                             // Speichert den Speichertext in eine Textdatei auf dem Desktop
                             File.WriteAllText(Path.Combine(desktopPath, dateiName + ".txt"), speicherText);
 
-                            sendSuccessfulMsg("Dungeon wurde erfolgreich auf dem Desktop mit dem Namen " + dateiName + " gespeichert.");
-
+                            successfulInput = true;
+                            Console.Clear();
+                            sendMainMenu();
+                            sendSuccessfulMsg("Dungeon wurde erfolgreich auf dem Desktop mit dem Namen '" + dateiName + "' gespeichert.\n" +
+                                $"Dateipfad: '{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}'");
+                            getMainMenuInput();
                             break;
                         }
                         else
@@ -392,7 +400,7 @@ namespace Dungeon_Generator
                 directions[j, 0] = tempX;
                 directions[j, 1] = tempY;
             }
-            
+         
             // Führt den Code vier mal pro Methodenaufruf auf
             for (int i = 0; i < 4; i++)
             {
