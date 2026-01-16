@@ -531,7 +531,7 @@ namespace Dungeon_Generator
                         continue;
                     }
 
-                    // Ändert die Farbe für Truhen auf Grün
+                    // Ändert die Farbe für Truhen auf Nico Grüner
                     if (map[x, y] == 'T')
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
