@@ -140,20 +140,29 @@ namespace Dungeon_Generator
 
                             foreach (char c in Path.GetInvalidFileNameChars())
                             {
-                                dateiName = dateiName.Replace(c.ToString(), "");
+                                dateiName = dateiName.Replace(c.ToString(), "\0");
                             }
-
-                            // Benutzt eine Methode von der Klasse Environment um den Desktoppath zu bekommen
-                            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);    
-                             
-                            // Speichert den Speichertext in eine Textdatei auf dem Desktop
-                            File.WriteAllText(Path.Combine(desktopPath, dateiName + ".txt"), speicherText);
 
                             successfulInput = true;
                             Console.Clear();
                             sendMainMenu();
-                            sendSuccessfulMsg("Dungeon wurde erfolgreich auf dem Desktop mit dem Namen '" + dateiName + "' gespeichert.\n" +
-                                $"Dateipfad: '{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}'");
+
+                            // Benutzt eine Methode von der Klasse Environment um den Desktoppath zu bekommen
+                            string desktopPath = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+
+                            // Speichert den Speichertext in eine Textdatei auf dem Desktop
+                            try
+                            {
+                                File.WriteAllText(Path.Combine(desktopPath, dateiName + ".txt"), speicherText);
+                                sendSuccessfulMsg("Dungeon wurde erfolgreich auf dem Desktop mit dem Namen '" + dateiName + "' gespeichert.\n" +
+                                    $"Dateipfad: {Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}");
+                            } catch 
+                            {
+                                File.WriteAllText(Path.Combine(desktopPath,  "Dungeon.txt"), speicherText);
+                                sendErrorMsg("Ein Fehler ist beim Speichern der Datei aufgetreten.\n" +
+                                    $"Es wurde mit dem Namen 'Dungeon' unter dem Pfad '{Environment.GetFolderPath(Environment.SpecialFolder.Desktop)}' gespeichert.");
+                            }
+
                             getMainMenuInput();
                             break;
                         }
