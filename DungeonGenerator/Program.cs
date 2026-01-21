@@ -26,8 +26,6 @@ namespace Dungeon_Generator
 
             sendMainMenu();
             getMainMenuInput();
-
-            Console.ReadKey();
         }
 
 
@@ -98,8 +96,6 @@ namespace Dungeon_Generator
                         // Abfragen ob bisher ein Dungeon generiert wurde
                         if (dungeonGenerated)
                         {
-                            successfulInput = true;
-
                             string dateiName;
 
                             string speicherText = "";
@@ -359,7 +355,7 @@ namespace Dungeon_Generator
                 int roomWidth = random.Next(3, 6);
                 int roomHeight = random.Next(3, 6);
 
-                // Erstellt Random Zahlen für die Breite und Höhe des Raums
+                // Erstellt eine Random Koordinate wo der Raum spawnt
                 int roomX = random.Next(1, dungeonWidth - roomWidth - 1);
                 int roomY = random.Next(1, dungeonHeight - roomHeight - 1);
 
@@ -390,7 +386,7 @@ namespace Dungeon_Generator
         {
             // 4 mögliche Richtungen
             int[,] directions = new int[,]
-            {          // x, y
+            {              // x, y
                 { 0, -2 }, // nach oben
                 { 2, 0 },  // nach rechts
                 { 0, 2 },  // nach unten
